@@ -50,6 +50,11 @@ You can check `kitti/prepare_data.py` for more details, and run `python kitti/pr
 
 After the command executes, you should see three newly generated data files under the `kitti` folder. You can run `python train/provider.py` to visualize the training data (frustum point clouds and 3D bounding box labels, in rect camera coordinate).
 
+### Depth map visualization
+Add visualization code for depth map. The depth map is estimated by the picture. You can use it by 
+  
+    python kitti/prepare_data_monodepth.py --demo
+  
 ### Training Frustum PointNets
 
 To start training (on GPU 0) the Frustum PointNets model, just run the following script:
