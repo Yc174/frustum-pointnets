@@ -42,6 +42,8 @@ class kitti_object(object):
         self.calib_dir = os.path.join(self.split_dir, 'calib')
         self.lidar_dir = os.path.join(self.split_dir, 'velodyne')
         self.label_dir = os.path.join(self.split_dir, 'label_2')
+        self.gt_depth_dir = os.path.join(self.root_dir, '..', 'training/disp_noc_0')
+        self.pred_depth_dir = os.path.join(self.root_dir, '..', 'pred')
 
     def __len__(self):
         return self.num_samples
@@ -65,9 +67,20 @@ class kitti_object(object):
         assert(idx<self.num_samples and self.split=='training') 
         label_filename = os.path.join(self.label_dir, '%06d.txt'%(idx))
         return utils.read_label(label_filename)
-        
-    def get_depth_map(self, idx):
-        pass
+
+    def get_gt_depth_map(self, idx):
+        assert (idx < self.num_samples and self.split == 'training')
+        gt_depth_filename = os.path.join(self.gt_depth_dir, str(idx).zfill(6) + "_10.png")
+        print(gt_depth_filename)
+        return utils.load_gt_depth_map(gt_depth_filename)
+
+    def get_pred_depth_map(self, idx):
+        assert(idx<self.num_samples and self.split=='training')
+        img = self.get_image(idx)
+        height, width, channels = img.shape
+
+        pred_depth_filename = os.path.join(self.pred_depth_dir, '%06d_disp.npy'%(idx))
+        return utils.load_pred_depth_map(pred_depth_filename, width, height)
 
     def get_top_down(self, idx):
         pass
@@ -174,9 +187,9 @@ def show_lidar_with_boxes(pc_velo, objects, calib,
         ori3d_pts_3d_velo = calib.project_rect_to_velo(ori3d_pts_3d)
         x1,y1,z1 = ori3d_pts_3d_velo[0,:]
         x2,y2,z2 = ori3d_pts_3d_velo[1,:]
-        draw_gt_boxes3d([box3d_pts_3d_velo], fig=fig)
-        mlab.plot3d([x1, x2], [y1, y2], [z1,z2], color=(0.5,0.5,0.5),
-            tube_radius=None, line_width=1, figure=fig)
+        # draw_gt_boxes3d([box3d_pts_3d_velo], fig=fig)
+        # mlab.plot3d([x1, x2], [y1, y2], [z1,z2], color=(0.5,0.5,0.5),
+        #     tube_radius=None, line_width=1, figure=fig)
     mlab.show(1)
 
 def show_lidar_on_image(pc_velo, img, calib, img_width, img_height):

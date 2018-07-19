@@ -56,12 +56,66 @@ def demo():
     print(('Image shape: ', img.shape))
     pc_velo = dataset.get_lidar(data_idx)[:,0:3]
     calib = dataset.get_calibration(data_idx)
+    gt_depth_map = dataset.get_gt_depth_map(data_idx)
+    pred_depth_map = dataset.get_pred_depth_map(data_idx)
 
     ## Draw lidar in rect camera coord
     #print(' -------- LiDAR points in rect camera coordination --------')
     #pc_rect = calib.project_velo_to_rect(pc_velo)
     #fig = draw_lidar_simple(pc_rect)
     #raw_input()
+
+    # Draw gt depth map
+    print(' --------draw gt depth map in velodyne coordinate --------')
+    print('gt_depth_map.shape:', gt_depth_map.shape)
+    height, width= gt_depth_map.shape
+
+    import time
+    gt_depth_points = np.zeros((height*width, 3))
+    a=time.time()
+    for i in range(height):
+        for j in range(width):
+            gt_depth_points[i*width+j, :] = [j, i, gt_depth_map[i, j]]
+
+    # x, y = np.meshgrid(np.arange(height), np.arange(width))
+    # gt_depth_points[:,0] = y.reshape(-1)
+    # gt_depth_points[:,1] = x.reshape(-1)
+    # gt_depth_points[:,2] = gt_depth_map.reshape(-1)
+    print('usd time: ', time.time() - a)
+
+    print(gt_depth_points[:1000])
+    gt_depth_velo = calib.project_image_to_velo(gt_depth_points)
+    print('gt_depth_velo.shape:', gt_depth_velo.shape)
+    fig = mlab.figure(figure=None, bgcolor=(0,0,0),
+        fgcolor=None, engine=None, size=(1000, 500))
+    draw_lidar(gt_depth_velo, fig=fig)
+    raw_input()
+
+    # Draw pred depth map
+    print(' --------draw pred depth map in velodyne coordinate --------')
+    print('pred_depth_map.shape:', pred_depth_map.shape)
+    height, width= pred_depth_map.shape
+
+    import time
+    pred_depth_points = np.zeros((height*width, 3))
+    a=time.time()
+    for i in range(height):
+        for j in range(width):
+            pred_depth_points[i*width+j, :] = [j, i, pred_depth_map[i, j]]
+
+    # x, y = np.meshgrid(np.arange(height), np.arange(width))
+    # gt_depth_points[:,0] = y.reshape(-1)
+    # gt_depth_points[:,1] = x.reshape(-1)
+    # gt_depth_points[:,2] = gt_depth_map.reshape(-1)
+    print('usd time: ', time.time() - a)
+
+    print(pred_depth_points[:1000])
+    pred_depth_velo = calib.project_image_to_velo(pred_depth_points)
+    print('pred_depth_velo.shape:', pred_depth_velo.shape)
+    fig = mlab.figure(figure=None, bgcolor=(0,0,0),
+        fgcolor=None, engine=None, size=(1000, 500))
+    draw_lidar(pred_depth_velo, fig=fig)
+    raw_input()
 
     # Draw 2d and 3d boxes on image
     print(' -------- 2D/3D bounding boxes in images --------')

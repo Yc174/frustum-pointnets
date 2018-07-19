@@ -272,6 +272,31 @@ def load_velo_scan(velo_filename):
     scan = scan.reshape((-1, 4))
     return scan
 
+###############################################################################
+#######################  KITTI
+
+width_to_focal = dict()
+width_to_focal[1242] = 721.5377
+width_to_focal[1241] = 718.856
+width_to_focal[1224] = 707.0493
+width_to_focal[1238] = 718.3351
+
+def load_gt_depth_map(depth_filename):
+    disp = cv2.imread(depth_filename, -1)
+    gt_disp = disp.astype(np.float32) / 256
+    height, width = gt_disp.shape
+    mask = gt_disp > 0
+
+    gt_depth = width_to_focal[width] * 0.54 / (gt_disp + (1.0 - mask))
+    # gt_depth = width_to_focal[width] * 0.54 / (gt_disp)
+    return gt_depth
+
+def load_pred_depth_map(depth_filename, width, height):
+    disp_map = np.load(depth_filename)
+    pred_disp = width * cv2.resize(disp_map, (width, height), interpolation=cv2.INTER_LINEAR)
+    pred_depth = width_to_focal[width] * 0.54 / pred_disp
+    return pred_depth
+
 def project_to_image(pts_3d, P):
     ''' Project 3d points to image plane.
 
